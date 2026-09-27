@@ -28,6 +28,7 @@
               <span class="badge" [class.inactivo]="!c.estado">{{ c.estado ? 'Activo' : 'Inactivo' }}</span>
             </td>
             <td class="acciones">
+              <a [routerLink]="[c.id, 'editar']" class="btn">Editar</a>
             </td>
           </tr>
         } @empty {
