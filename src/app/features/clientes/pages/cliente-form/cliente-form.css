@@ -1,0 +1,5 @@
+.formulario { display: flex; flex-direction: column; gap: 10px; max-width: 540px; }
+label { display: flex; flex-direction: column; gap: 4px; font-weight: 600; font-size: 14px; }
+.check { flex-direction: row; align-items: center; gap: 8px; font-weight: normal; }
+.error { color: #b42318; font-size: 12px; margin-top: 2px; }
+.acciones { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
