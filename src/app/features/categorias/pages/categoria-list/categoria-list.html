@@ -29,6 +29,7 @@
             </td>
             <td class="acciones">
               <a [routerLink]="[c.id, 'editar']" class="btn">Editar</a>
+              <button type="button" class="btn btn-peligro" (click)="eliminar(c)">Eliminar</button>
             </td>
           </tr>
         } @empty {

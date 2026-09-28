@@ -41,4 +41,14 @@ export class CategoriaList implements OnInit {
       },
     });
   }
+
+  eliminar(categoria: Categoria): void {
+    if (!confirm(`¿Eliminar la categoría "${categoria.nombre}"?`)) {
+      return;
+    }
+    this.categoriaService.eliminar(categoria.id).subscribe({
+      next: () => this.categorias.update(lista => lista.filter(c => c.id !== categoria.id)),
+      error: (err: HttpErrorResponse) => this.error.set(mensajeError(err)),
+    });
+  }
 }
