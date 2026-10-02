@@ -17,7 +17,6 @@ export class ClienteForm implements OnInit {
   private readonly clienteService = inject(ClienteService);
   private readonly router = inject(Router);
 
-  /** Llega desde la ruta ':id/editar' gracias a withComponentInputBinding(). */
   readonly id = input<string>();
 
   protected readonly guardando = signal(false);

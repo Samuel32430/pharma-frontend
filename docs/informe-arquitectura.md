@@ -188,9 +188,9 @@ El componente `ClienteList` (`src/app/features/clientes/pages/cliente-list/clien
 La ventaja concreta es la **Carga Diferida (*Lazy Loading*)** y la optimización del rendimiento en la carga inicial (*First Contentful Paint*). El código TypeScript, plantillas y estilos del módulo Clientes no se descargan cuando el usuario entra por primera vez a la SPA, sino únicamente bajo demanda cuando navega a `/clientes`.  
 En la salida de `ng build` se evidencia la generación del fragmento independiente:
 ```text
-chunk-CSEw7eoM.js   | clientes-routes   |  12.73 kB |                 3.82 kB
+chunk-jr0Debh5.js   | clientes-routes   |  14.90 kB |                 4.26 kB
 ```
-Esto certifica que los 12.73 kB del módulo se descargan en un archivo separado y no saturan el paquete principal inicial (`main.js`).
+Dicha evidencia certifica que los 14.90 kB del módulo quedan segregados fuera del paquete principal (`main.js`), garantizando un despliegue ligero y escalable.
 
 ### 4. ¿Por qué el encabezado y el sidebar no se vuelven a dibujar al pasar de Categorías a Clientes?
 Porque tanto el `Header` como el `Sidebar` están alojados dentro del componente contenedor `MainLayout` (`src/app/layout/main-layout/main-layout.ts`), el cual actúa como componente padre en la configuración de rutas de `app.routes.ts` (Línea 7). Al navegar entre rutas secundarias (`/categorias` y `/clientes`), el enrutador de Angular mantiene intacta la instancia del `MainLayout` y sus hijos directos, y se limita a destruir y montar el componente correspondiente dentro del `<router-outlet />` ubicado en el área `main`.

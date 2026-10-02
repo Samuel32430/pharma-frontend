@@ -34,6 +34,18 @@ export class CategoriaForm implements OnInit {
     return !!this.id();
   }
 
+  private errorTimer?: ReturnType<typeof setTimeout>;
+
+  private mostrarError(mensaje: string): void {
+    if (this.errorTimer) {
+      clearTimeout(this.errorTimer);
+    }
+    this.error.set(mensaje);
+    this.errorTimer = setTimeout(() => {
+      this.error.set(null);
+    }, 3000);
+  }
+
   ngOnInit(): void {
     const id = this.id();
     if (id) {
@@ -43,7 +55,7 @@ export class CategoriaForm implements OnInit {
           descripcion: c.descripcion ?? '',
           estado: c.estado,
         }),
-        error: (err: HttpErrorResponse) => this.error.set(mensajeError(err)),
+        error: (err: HttpErrorResponse) => this.mostrarError(mensajeError(err)),
       });
     }
   }
@@ -68,10 +80,17 @@ export class CategoriaForm implements OnInit {
 
     this.guardando.set(true);
     peticion.subscribe({
-      next: () => this.router.navigate(['/categorias']),
+      next: () =>
+        this.router.navigate(['/categorias'], {
+          queryParams: {
+            exito: this.esEdicion()
+              ? 'Categoría actualizada correctamente'
+              : 'Categoría registrada correctamente',
+          },
+        }),
       error: (err: HttpErrorResponse) => {
         this.guardando.set(false);
-        this.error.set(mensajeError(err));
+        this.mostrarError(mensajeError(err));
         this.erroresServidor.set(erroresDeValidacion(err));
       },
     });

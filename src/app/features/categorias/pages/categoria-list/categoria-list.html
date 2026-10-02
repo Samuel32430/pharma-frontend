@@ -7,6 +7,10 @@
   <input class="input buscador" placeholder="Buscar por nombre…"
     [value]="filtro()" (input)="filtro.set($any($event.target).value)" />
 
+  @if (mensajeExito()) {
+    <div class="alerta-exito">{{ mensajeExito() }}</div>
+  }
+
   @if (error()) {
     <div class="alerta">{{ error() }}</div>
   }
@@ -29,7 +33,7 @@
             </td>
             <td class="acciones">
               <a [routerLink]="[c.id, 'editar']" class="btn">Editar</a>
-              <button type="button" class="btn btn-peligro" (click)="eliminar(c)">Eliminar</button>
+              <button type="button" class="btn btn-peligro" (click)="solicitarEliminar(c)">Eliminar</button>
             </td>
           </tr>
         } @empty {
@@ -37,5 +41,18 @@
         }
       </tbody>
     </table>
+  }
+
+  @if (categoriaAEliminar(); as cat) {
+    <div class="modal-backdrop" (click)="cancelarEliminar()">
+      <div class="modal-dialog" (click)="$event.stopPropagation()">
+        <h3>Confirmar eliminación</h3>
+        <p>¿Estás seguro de que deseas eliminar la categoría <strong>«{{ cat.nombre }}»</strong>?</p>
+        <div class="modal-acciones">
+          <button type="button" class="btn" (click)="cancelarEliminar()">Cancelar</button>
+          <button type="button" class="btn btn-peligro" (click)="confirmarEliminar()">Eliminar</button>
+        </div>
+      </div>
+    </div>
   }
 </section>

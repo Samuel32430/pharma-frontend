@@ -1,6 +1,6 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Cliente } from '../../models/cliente.model';
 import { PaginaResponse } from '../../../../core/models/pagina-response';
 import { ClienteService } from '../../services/cliente-service';
@@ -14,6 +14,8 @@ import { mensajeError } from '../../../../core/utils/http-error';
 })
 export class ClienteList implements OnInit {
   private readonly clienteService = inject(ClienteService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   protected readonly pagina = signal(0);
   protected readonly tamanio = signal(10);
@@ -23,6 +25,8 @@ export class ClienteList implements OnInit {
   protected readonly respuesta = signal<PaginaResponse<Cliente> | null>(null);
   protected readonly cargando = signal(false);
   protected readonly error = signal<string | null>(null);
+  protected readonly mensajeExito = signal<string | null>(null);
+  protected readonly clienteADarDeBaja = signal<Cliente | null>(null);
   protected readonly filtro = signal('');
 
   protected readonly filtrados = computed(() => {
@@ -42,8 +46,37 @@ export class ClienteList implements OnInit {
     });
   });
 
+  private errorTimer?: ReturnType<typeof setTimeout>;
+  private exitoTimer?: ReturnType<typeof setTimeout>;
+
+  private mostrarError(mensaje: string): void {
+    if (this.errorTimer) {
+      clearTimeout(this.errorTimer);
+    }
+    this.error.set(mensaje);
+    this.errorTimer = setTimeout(() => {
+      this.error.set(null);
+    }, 3000);
+  }
+
+  protected mostrarExito(mensaje: string): void {
+    if (this.exitoTimer) {
+      clearTimeout(this.exitoTimer);
+    }
+    this.mensajeExito.set(mensaje);
+    this.exitoTimer = setTimeout(() => {
+      this.mensajeExito.set(null);
+    }, 3000);
+  }
+
   ngOnInit(): void {
     this.cargar();
+
+    const exito = this.route.snapshot.queryParamMap.get('exito');
+    if (exito) {
+      this.mostrarExito(exito);
+      this.router.navigate([], { replaceUrl: true, queryParams: {} });
+    }
   }
 
   cargar(): void {
@@ -57,7 +90,7 @@ export class ClienteList implements OnInit {
           this.cargando.set(false);
         },
         error: (err: HttpErrorResponse) => {
-          this.error.set(mensajeError(err));
+          this.mostrarError(mensajeError(err));
           this.cargando.set(false);
         },
       });
@@ -87,16 +120,28 @@ export class ClienteList implements OnInit {
     this.cargar();
   }
 
-  darDeBaja(cliente: Cliente): void {
-    if (!confirm(`¿Dar de baja al cliente "${cliente.nombres} ${cliente.apellidos}"?`)) {
-      return;
-    }
+  solicitarBaja(cliente: Cliente): void {
+    this.clienteADarDeBaja.set(cliente);
+  }
+
+  cancelarBaja(): void {
+    this.clienteADarDeBaja.set(null);
+  }
+
+  confirmarBaja(): void {
+    const cliente = this.clienteADarDeBaja();
+    if (!cliente) return;
+
+    this.error.set(null);
     this.clienteService.eliminar(cliente.id).subscribe({
       next: () => {
+        this.clienteADarDeBaja.set(null);
         this.cargar();
+        this.mostrarExito(`Cliente "${cliente.nombres} ${cliente.apellidos}" dado de baja correctamente`);
       },
       error: (err: HttpErrorResponse) => {
-        this.error.set(mensajeError(err));
+        this.clienteADarDeBaja.set(null);
+        this.mostrarError(mensajeError(err));
       },
     });
   }
