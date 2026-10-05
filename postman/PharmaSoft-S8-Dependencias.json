@@ -1,0 +1,539 @@
+{
+	"info": {
+		"_postman_id": "7f8b9e12-3456-4789-abcd-ef0123456789",
+		"name": "PharmaSoft - S8 Dependencias",
+		"description": "Colección de pruebas de dependencias entre Categorías y Productos para la Actividad Autónoma Sesión 8 (Lenguaje de Programación II - UPeU).",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "01. Categorías",
+			"item": [
+				{
+					"name": "Listar Categorías",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/categorias",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"categorias"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Categoría por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/categorias/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"categorias",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear Categoría",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Dermatológicos\",\n  \"descripcion\": \"Cuidado de la piel\",\n  \"estado\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/categorias",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"categorias"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Desactivar Categoría (estado: false)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Vitaminas\",\n  \"descripcion\": \"Suplementos vitamínicos\",\n  \"estado\": false\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/categorias/3",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"categorias",
+								"3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "B-03. Eliminar Categoría sin Productos (204)",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/categorias/4",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"categorias",
+								"4"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "B-04. Eliminar Categoría con Productos Asociados (409)",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/categorias/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"categorias",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "02. Productos - Altas",
+			"item": [
+				{
+					"name": "A-01. Registrar producto válido en categoría activa (201)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Paracetamol 500 mg x 100\",\n  \"precio\": 15.50,\n  \"stock\": 50,\n  \"estado\": true,\n  \"categoriaId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/productos",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"productos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "A-02. Registrar producto sin categoriaId (400)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Ibuprofeno 400 mg\",\n  \"precio\": 12.00,\n  \"stock\": 20,\n  \"estado\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/productos",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"productos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "A-03. Registrar producto con categoriaId 999 inexistente (404)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Amoxicilina 500 mg\",\n  \"precio\": 25.00,\n  \"stock\": 30,\n  \"estado\": true,\n  \"categoriaId\": 999\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/productos",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"productos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "A-04. Registrar producto en categoría INACTIVA (Hallazgo H-01)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Producto de prueba A-04\",\n  \"precio\": 5.50,\n  \"stock\": 10,\n  \"estado\": true,\n  \"categoriaId\": 3\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/productos",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"productos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "A-05. Registrar producto con nombre duplicado en otra capitalización (409)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"paracetamol 500 mg x 100\",\n  \"precio\": 16.00,\n  \"stock\": 10,\n  \"estado\": true,\n  \"categoriaId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/productos",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"productos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "A-06. Registrar producto con precio 0 y stock -1 (400 validationErrors)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Jarabe Tos\",\n  \"precio\": 0.00,\n  \"stock\": -1,\n  \"estado\": true,\n  \"categoriaId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/productos",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"productos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "A-07. Registrar producto con nombre en blanco (400 / 409)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"   \",\n  \"precio\": 10.00,\n  \"stock\": 5,\n  \"estado\": true,\n  \"categoriaId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/productos",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"productos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "A-08. Registrar producto con precio decimal extendido (Validación)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Alcohol 70% 500ml\",\n  \"precio\": 8.995,\n  \"stock\": 25,\n  \"estado\": true,\n  \"categoriaId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/productos",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"productos"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "03. Productos - Cambios",
+			"item": [
+				{
+					"name": "C-01. Cambiar categoría a otra activa (200)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Paracetamol 500 mg x 100\",\n  \"precio\": 15.50,\n  \"stock\": 50,\n  \"estado\": true,\n  \"categoriaId\": 2\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/productos/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"productos",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "C-02. Cambiar categoría a INACTIVA (Hallazgo H-02)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Paracetamol 500 mg x 100\",\n  \"precio\": 15.50,\n  \"stock\": 50,\n  \"estado\": true,\n  \"categoriaId\": 3\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/productos/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"productos",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "C-05. Actualizar con nombre duplicado de otro producto (409)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Ibuprofeno 400 mg x 50\",\n  \"precio\": 19.00,\n  \"stock\": 40,\n  \"estado\": true,\n  \"categoriaId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/productos/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"productos",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "04. Productos - Bajas y Consultas",
+			"item": [
+				{
+					"name": "Listar Productos Paginados (Página 0, Tamaño 10)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/productos?pagina=0&tamanio=10&ordenarPor=nombre&direccion=asc",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"productos"
+							],
+							"query": [
+								{
+									"key": "pagina",
+									"value": "0"
+								},
+								{
+									"key": "tamanio",
+									"value": "10"
+								},
+								{
+									"key": "ordenarPor",
+									"value": "nombre"
+								},
+								{
+									"key": "direccion",
+									"value": "asc"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "B-01. Dar de baja lógica producto activo (204)",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/productos/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"productos",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "B-02. Dar de baja nuevamente al mismo producto (409)",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/productos/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"productos",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "B-05. Dar de baja producto inexistente ID 9999 (404)",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/productos/9999",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"productos",
+								"9999"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080/api/v1",
+			"type": "string"
+		}
+	]
+}
