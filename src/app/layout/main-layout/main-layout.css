@@ -13,6 +13,12 @@
   grid-template-columns: 0 1fr;
 }
 
-.area-header { grid-area: header; }
-.area-sidebar { grid-area: sidebar; overflow: hidden; }
-.area-main { grid-area: main; padding: 24px; background: #f4f6fa; }
+.area-header { 
+  grid-area: header; 
+}
+.area-sidebar { 
+  grid-area: sidebar; overflow: hidden; 
+}
+.area-main { 
+  grid-area: main; padding: 24px; background: #f4f6fa; 
+}
