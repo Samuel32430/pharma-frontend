@@ -1,0 +1,131 @@
+<section class="page">
+  <header class="page-header">
+    <h2>Clientes</h2>
+    <a routerLink="nuevo" class="btn btn-primary">+ Nuevo cliente</a>
+  </header>
+
+  <div class="filtros-barra">
+    <input
+      class="input buscador"
+      placeholder="Buscar por DNI o nombre…"
+      [value]="filtro()"
+      (input)="filtro.set($any($event.target).value)"
+    />
+
+    <div class="selector-tamanio">
+      <label for="tamanioSelect">Mostrar:</label>
+      <select
+        id="tamanioSelect"
+        class="input select-tamanio"
+        [value]="tamanio()"
+        (change)="cambiarTamanio($any($event.target).value)"
+      >
+        <option [value]="5">5</option>
+        <option [value]="10">10</option>
+        <option [value]="20">20</option>
+      </select>
+    </div>
+  </div>
+
+  @if (mensajeExito()) {
+    <div class="alerta-exito">{{ mensajeExito() }}</div>
+  }
+
+  @if (error()) {
+    <div class="alerta">{{ error() }}</div>
+  }
+
+  @if (cargando()) {
+    <p>Cargando clientes…</p>
+  } @else {
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th (click)="ordenar('dni')" class="sortable">
+            DNI
+            @if (ordenarPor() === 'dni') {
+              <span>{{ direccion() === 'asc' ? ' ▲' : ' ▼' }}</span>
+            }
+          </th>
+          <th (click)="ordenar('apellidos')" class="sortable">
+            Apellidos y nombres
+            @if (ordenarPor() === 'apellidos') {
+              <span>{{ direccion() === 'asc' ? ' ▲' : ' ▼' }}</span>
+            }
+          </th>
+          <th>Correo</th>
+          <th>Teléfono</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (c of filtrados(); track c.id) {
+          <tr>
+            <td>{{ c.dni }}</td>
+            <td>{{ c.apellidos }}, {{ c.nombres }}</td>
+            <td>{{ c.email }}</td>
+            <td>{{ c.telefono ?? '—' }}</td>
+            <td>
+              <span class="badge" [class.inactivo]="!c.estado">
+                {{ c.estado ? 'Activo' : 'Inactivo' }}
+              </span>
+            </td>
+            <td class="acciones">
+              <a [routerLink]="[c.id, 'editar']" class="btn">Editar</a>
+              <button
+                type="button"
+                class="btn btn-peligro"
+                [disabled]="!c.estado"
+                (click)="solicitarBaja(c)"
+              >
+                Dar de baja
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="vacio">No hay clientes registrados.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    @if (respuesta(); as r) {
+      <div class="paginacion">
+        <button
+          type="button"
+          class="btn"
+          [disabled]="pagina() === 0 || cargando()"
+          (click)="cambiarPagina(-1)"
+        >
+          « Anterior
+        </button>
+        <span class="info-paginacion">
+          Página {{ r.totalPaginas === 0 ? 0 : pagina() + 1 }} de {{ r.totalPaginas }} · {{ r.totalElementos }} clientes
+        </span>
+        <button
+          type="button"
+          class="btn"
+          [disabled]="r.ultima || cargando()"
+          (click)="cambiarPagina(1)"
+        >
+          Siguiente »
+        </button>
+      </div>
+    }
+  }
+
+  @if (clienteADarDeBaja(); as cl) {
+    <div class="modal-backdrop" (click)="cancelarBaja()">
+      <div class="modal-dialog" (click)="$event.stopPropagation()">
+        <h3>Confirmar baja lógica</h3>
+        <p>¿Estás seguro de que deseas dar de baja al cliente <strong>«{{ cl.nombres }} {{ cl.apellidos }}»</strong> (DNI: {{ cl.dni }})?</p>
+        <div class="modal-acciones">
+          <button type="button" class="btn" (click)="cancelarBaja()">Cancelar</button>
+          <button type="button" class="btn btn-peligro" (click)="confirmarBaja()">Confirmar baja</button>
+        </div>
+      </div>
+    </div>
+  }
+</section>

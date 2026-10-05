@@ -1,0 +1,10 @@
+.filtros-barra { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+.buscador { max-width: 320px; }
+.selector-tamanio { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.select-tamanio { width: auto; padding: 6px 10px; }
+.sortable { cursor: pointer; user-select: none; }
+.sortable:hover { background-color: #1a427a; }
+.acciones { display: flex; gap: 8px; }
+.vacio { text-align: center; color: #6b7280; padding: 24px; }
+.paginacion { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; }
+.info-paginacion { font-size: 14px; color: #4b5563; font-weight: 500; }
