@@ -32,6 +32,7 @@
               <span class="badge" [class.inactivo]="!c.estado">{{ c.estado ? 'Activo' : 'Inactivo' }}</span>
             </td>
             <td class="acciones">
+              <a [routerLink]="'/productos'" [queryParams]="{ categoriaId: c.id }" class="btn">Ver productos</a>
               <a [routerLink]="[c.id, 'editar']" class="btn">Editar</a>
               <button type="button" class="btn btn-peligro" (click)="solicitarEliminar(c)">Eliminar</button>
             </td>
