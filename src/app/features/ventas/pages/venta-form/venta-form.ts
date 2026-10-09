@@ -182,6 +182,7 @@ export class VentaForm implements OnInit {
   }
 
   // ---------- Revisión, confirmación y registro ----------
+  /** Valida el formulario y comprueba que ninguna línea exceda el stock antes de confirmar. */
   revisar(): void {
     if (this.form.invalid || this.hayExcesoDeStock()) {
       this.form.markAllAsTouched();
