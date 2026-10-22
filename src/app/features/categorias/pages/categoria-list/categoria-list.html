@@ -1,7 +1,7 @@
 <section class="page">
   <header class="page-header">
     <h2>Categorías</h2>
-    <a routerLink="nuevo" class="btn btn-primary">+ Nueva categoría</a>
+    <a *appSiPermiso="'CATALOGO_ESCRIBIR'" routerLink="nuevo" class="btn btn-primary">+ Nueva categoría</a>
   </header>
 
   <input class="input buscador" placeholder="Buscar por nombre…"
@@ -20,7 +20,13 @@
   } @else {
     <table class="tabla">
       <thead>
-        <tr><th>ID</th><th>Nombre</th><th>Descripción</th><th>Estado</th><th>Acciones</th></tr>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Descripción</th>
+          <th>Estado</th>
+          <th *appSiPermiso="'CATALOGO_ESCRIBIR'">Acciones</th>
+        </tr>
       </thead>
       <tbody>
         @for (c of filtradas(); track c.id) {
@@ -31,7 +37,7 @@
             <td>
               <span class="badge" [class.inactivo]="!c.estado">{{ c.estado ? 'Activo' : 'Inactivo' }}</span>
             </td>
-            <td class="acciones">
+            <td *appSiPermiso="'CATALOGO_ESCRIBIR'" class="acciones">
               <a [routerLink]="'/productos'" [queryParams]="{ categoriaId: c.id }" class="btn">Ver productos</a>
               <a [routerLink]="[c.id, 'editar']" class="btn">Editar</a>
               <button type="button" class="btn btn-peligro" (click)="solicitarEliminar(c)">Eliminar</button>
