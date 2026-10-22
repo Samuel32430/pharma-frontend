@@ -10,7 +10,12 @@ export class ProductoService {
     private readonly http = inject(HttpClient);
     private readonly url = `${environment.apiUrl}/productos`;
 
-    listar(pagina : number, tamanio : number, ordenarPor : OrdenProducto, direccion : OrdenDireccion) : Observable<PaginaResponse<Producto>>{ 
+    listar(
+        pagina = 0,
+        tamanio = 10,
+        ordenarPor: OrdenProducto = 'nombre',
+        direccion: OrdenDireccion = 'asc'
+    ): Observable<PaginaResponse<Producto>> { 
         const params = new HttpParams()
         .set('pagina', pagina)
         .set('tamanio', tamanio)

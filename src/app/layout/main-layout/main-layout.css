@@ -22,3 +22,10 @@
 .area-main { 
   grid-area: main; padding: 24px; background: #f4f6fa; 
 }
+
+/* Al imprimir solo queda el contenido de la página: sin cabecera ni menú. */
+@media print {
+  .shell { display: block; min-height: 0; }
+  .area-header, .area-sidebar { display: none; }
+  .area-main { padding: 0; background: #fff; }
+}

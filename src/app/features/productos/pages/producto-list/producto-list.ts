@@ -8,9 +8,10 @@ import { Categoria } from '../../../categorias/models/categoria.model';
 import { CategoriaService } from '../../../categorias/services/categoria-service';
 import { OrdenDireccion, OrdenProducto, Producto } from '../../models/producto.model';
 import { ProductoService } from '../../services/producto-service';
+import { SiPermiso } from '../../../../shared/directives/si-permiso';
 
 @Component({
-  imports: [RouterLink, CurrencyPipe],
+  imports: [RouterLink, CurrencyPipe, SiPermiso],
   selector: 'app-producto-list',  
   styleUrl: './producto-list.css',
   templateUrl: './producto-list.html',
