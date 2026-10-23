@@ -1,0 +1,76 @@
+.aviso-sesion {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: #fff3cd;
+  color: #856404;
+  border-bottom: 1px solid #ffeeba;
+  padding: 0.6rem 1.25rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.contenido {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  font-size: 0.95rem;
+  flex-wrap: wrap;
+}
+
+.icono {
+  font-size: 1.15rem;
+  color: #d39e00;
+}
+
+.mensaje strong {
+  font-family: monospace;
+  font-size: 1.05rem;
+  letter-spacing: 0.05em;
+  color: #664d03;
+}
+
+.btn-cerrar-sesion {
+  background-color: #d39e00;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-cerrar-sesion:hover {
+  background-color: #b08200;
+}
+
+.btn-descartar {
+  background: transparent;
+  border: none;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: #856404;
+  cursor: pointer;
+  padding: 0 0.35rem;
+  border-radius: 3px;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.btn-descartar:hover {
+  background-color: rgba(0, 0, 0, 0.07);
+  color: #533f03;
+}

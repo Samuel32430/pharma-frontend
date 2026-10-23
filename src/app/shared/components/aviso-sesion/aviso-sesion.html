@@ -1,0 +1,16 @@
+@if (auth.porVencer()) {
+  <aside class="aviso-sesion" role="status" aria-live="polite">
+    <div class="contenido">
+      <span class="icono" aria-hidden="true">⚠</span>
+      <span class="mensaje">
+        Su sesión vence en <strong>{{ tiempoRestante() }}</strong>.
+      </span>
+      <button type="button" class="btn-cerrar-sesion" (click)="cerrarSesion()">
+        Cerrar sesión ahora
+      </button>
+      <button type="button" class="btn-descartar" (click)="ocultar()" aria-label="Ocultar aviso de sesión">
+        &times;
+      </button>
+    </div>
+  </aside>
+}
