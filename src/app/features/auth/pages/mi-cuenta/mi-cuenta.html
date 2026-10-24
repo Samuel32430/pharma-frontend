@@ -1,0 +1,108 @@
+<div class="cuenta-contenedor">
+  <header class="cuenta-header">
+    <div class="titulo-grupo">
+      <h1>Mi cuenta</h1>
+      <p class="subtitulo">Información del usuario autenticado y permisos en el servidor</p>
+    </div>
+    <button type="button" class="btn-recargar" (click)="cargarPerfil()" [disabled]="cargando()" title="Refrescar datos del servidor">
+      🔄 Actualizar
+    </button>
+  </header>
+
+  @if (permisosDiscrepantes()) {
+    <div class="alerta-discrepancia" role="alert">
+      <span class="alerta-icono" aria-hidden="true">⚠️</span>
+      <div class="alerta-cuerpo">
+        <strong>Sus permisos cambiaron.</strong>
+        <p>Los permisos reconocidos en el servidor difieren de los guardados en su sesión actual.</p>
+      </div>
+      <button type="button" class="btn-alerta-accion" (click)="cerrarSesion()">
+        Cerrar sesión y volver a ingresar
+      </button>
+    </div>
+  }
+
+  @if (cargando()) {
+    <div class="estado-cargando">
+      <div class="spinner"></div>
+      <p>Consultando perfil en el servidor (GET /api/v1/auth/me)…</p>
+    </div>
+  } @else if (error()) {
+    <div class="estado-error" role="alert">
+      <span class="icono-error">❌</span>
+      <p>{{ error() }}</p>
+      <button type="button" class="btn-reintentar" (click)="cargarPerfil()">Reintentar</button>
+    </div>
+  } @else if (perfil(); as p) {
+    <div class="cuenta-grid">
+      <!-- Tarjeta: Datos Generales -->
+      <section class="card tarjeta-datos" aria-labelledby="seccion-datos">
+        <h2 id="seccion-datos" class="tarjeta-titulo">👤 Datos del Usuario</h2>
+        <div class="datos-lista">
+          <div class="dato-item">
+            <span class="etiqueta">Nombre completo</span>
+            <span class="valor nombre-destacado">{{ p.nombreCompleto || p.empleadoNombre || 'No disponible' }}</span>
+          </div>
+          <div class="dato-item">
+            <span class="etiqueta">Nombre de usuario</span>
+            <span class="valor valor-mono">{{ p.username }}</span>
+          </div>
+          @if (p.cargo) {
+            <div class="dato-item">
+              <span class="etiqueta">Cargo asignado</span>
+              <span class="valor">{{ p.cargo }}</span>
+            </div>
+          }
+          <div class="dato-item">
+            <span class="etiqueta">Estado de la cuenta</span>
+            <span class="badge-estado" [class.activo]="p.estado !== false">
+              {{ p.estado !== false ? 'Activo' : 'Inactivo' }}
+            </span>
+          </div>
+        </div>
+
+        <h3 class="subtitulo-roles">Roles Asignados</h3>
+        <div class="roles-tags">
+          @for (rol of p.roles; track rol) {
+            <span class="tag-rol">{{ rol }}</span>
+          } @empty {
+            <span class="sin-datos">Sin roles asignados</span>
+          }
+        </div>
+      </section>
+
+      <!-- Tarjeta: Permisos por Módulo -->
+      <section class="card tarjeta-permisos" aria-labelledby="seccion-permisos">
+        <h2 id="seccion-permisos" class="tarjeta-titulo">🛡️ Permisos por Módulo</h2>
+        <p class="tarjeta-descripcion">
+          Evaluación de permisos devueltos por el backend para el usuario actual:
+        </p>
+
+        <div class="modulos-lista">
+          @for (modulo of modulos; track modulo.nombre) {
+            <div class="modulo-bloque">
+              <div class="modulo-encabezado">
+                <span class="modulo-icono">{{ modulo.icono }}</span>
+                <span class="modulo-nombre">{{ modulo.nombre }}</span>
+              </div>
+              <ul class="permisos-items">
+                @for (permiso of modulo.permisos; track permiso.clave) {
+                  <li class="permiso-item" [class.concedido]="tienePermiso(permiso.clave)">
+                    <span class="permiso-marca" [class.marca-concedido]="tienePermiso(permiso.clave)" [class.marca-denegado]="!tienePermiso(permiso.clave)">
+                      {{ tienePermiso(permiso.clave) ? '✔' : '✘' }}
+                    </span>
+                    <div class="permiso-info">
+                      <span class="permiso-nombre">{{ permiso.nombre }}</span>
+                      <span class="permiso-clave">{{ permiso.clave }}</span>
+                      <span class="permiso-desc">{{ permiso.descripcion }}</span>
+                    </div>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+        </div>
+      </section>
+    </div>
+  }
+</div>

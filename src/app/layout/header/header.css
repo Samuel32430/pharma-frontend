@@ -10,7 +10,14 @@
 .menubar a:hover { color: #fff; }
 .usuario { margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; line-height: 1.2; }
 .nombre { font-weight: 600; font-size: 14px; }
+.enlace-cuenta { color: #fff; text-decoration: none; cursor: pointer; }
+.enlace-cuenta:hover { text-decoration: underline; color: #f2a900; }
 .detalle { font-size: 12px; color: #cadcfc; }
+.btn-mi-cuenta {
+  padding: 6px 12px; border: 1px solid #cadcfc; border-radius: 8px; background: none;
+  color: #fff; text-decoration: none; font: inherit; font-size: 14px; cursor: pointer;
+}
+.btn-mi-cuenta:hover { background: rgb(255 255 255 / 0.12); color: #f2a900; }
 .btn-salir {
   padding: 6px 12px; border: 1px solid #cadcfc; border-radius: 8px; background: none;
   color: #fff; font: inherit; font-size: 14px; cursor: pointer;

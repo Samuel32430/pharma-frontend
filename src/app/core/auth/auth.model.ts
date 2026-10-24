@@ -36,3 +36,17 @@ export interface Sesion {
   roles: string[];
   permisos: Permiso[];
 }
+
+/** Datos de usuario devueltos por GET /api/v1/auth/me (UsuarioResponseDTO). */
+export interface PerfilUsuario {
+  id?: number;
+  username: string;
+  empleadoId?: number;
+  empleadoNombre?: string;
+  nombreCompleto?: string;
+  cargo?: string;
+  roles: string[];
+  permisos: Permiso[];
+  estado?: boolean;
+  fechaCreacion?: string;
+}

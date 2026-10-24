@@ -7,9 +7,10 @@
   </nav>
   @if (auth.sesion(); as s) {
     <div class="usuario">
-      <span class="nombre">{{ s.nombreCompleto }}</span>
+      <a routerLink="/mi-cuenta" class="nombre enlace-cuenta" title="Ir a Mi cuenta">{{ s.nombreCompleto }}</a>
       <span class="detalle">{{ s.roles.join(' · ') }} · expira {{ s.expiraEn | date: 'HH:mm' }}</span>
     </div>
+    <a routerLink="/mi-cuenta" class="btn-mi-cuenta" title="Mi cuenta">Mi cuenta</a>
     <button type="button" class="btn-salir" (click)="salir()">Cerrar sesión</button>
   }
 </header>
