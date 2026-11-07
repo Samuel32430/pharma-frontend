@@ -5,4 +5,5 @@ export interface ErrorResponse {
   message: string;
   path: string;
   validationErrors: Record<string, string> | null;
+  requestId?: string;
 }
