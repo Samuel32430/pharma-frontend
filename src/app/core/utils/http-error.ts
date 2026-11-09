@@ -6,7 +6,10 @@ export function mensajeError(err: HttpErrorResponse): string {
     return 'No se pudo conectar con el servidor. Verifique que el backend esté en ejecución y que CORS permita este origen.';
   }
   const cuerpo = err.error as ErrorResponse | null;
-  return cuerpo?.message ?? `Error ${err.status}: ${err.statusText}`;
+  const mensajeBase = cuerpo?.message ?? `Error ${err.status}: ${err.statusText}`;
+  return cuerpo?.requestId
+    ? `${mensajeBase} (Código de seguimiento: ${cuerpo.requestId})`
+    : mensajeBase;
 }
 
 export function erroresDeValidacion(err: HttpErrorResponse): Record<string, string> {

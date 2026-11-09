@@ -2,7 +2,9 @@
   <app-header class="area-header" (toggleMenu)="alternarMenu()" />
   <app-sidebar class="area-sidebar" />
   <main class="area-main">
-    <app-aviso-sesion />
+    @defer (on idle) {
+      <app-aviso-sesion />
+    }
     <router-outlet />
   </main>
 </div>
