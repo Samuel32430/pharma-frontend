@@ -11,20 +11,6 @@
       [value]="filtro()"
       (input)="filtro.set($any($event.target).value)"
     />
-
-    <div class="selector-tamanio">
-      <label for="tamanioSelect">Mostrar:</label>
-      <select
-        id="tamanioSelect"
-        class="input select-tamanio"
-        [value]="tamanio()"
-        (change)="cambiarTamanio($any($event.target).value)"
-      >
-        <option [value]="5">5</option>
-        <option [value]="10">10</option>
-        <option [value]="20">20</option>
-      </select>
-    </div>
   </div>
 
   @if (mensajeExito()) {
@@ -35,22 +21,22 @@
     <div class="alerta">{{ error() }}</div>
   }
 
-  @if (cargando()) {
+  @if (!pag() && clientes.isLoading()) {
     <p>Cargando clientes…</p>
-  } @else {
+  } @else if (pag(); as p) {
     <table class="tabla">
       <thead>
         <tr>
           <th (click)="ordenar('dni')" class="sortable">
             DNI
-            @if (ordenarPor() === 'dni') {
-              <span>{{ direccion() === 'asc' ? ' ▲' : ' ▼' }}</span>
+            @if (orden() === 'dni') {
+              <span>{{ dir() === 'asc' ? ' ▲' : ' ▼' }}</span>
             }
           </th>
           <th (click)="ordenar('apellidos')" class="sortable">
             Apellidos y nombres
-            @if (ordenarPor() === 'apellidos') {
-              <span>{{ direccion() === 'asc' ? ' ▲' : ' ▼' }}</span>
+            @if (orden() === 'apellidos') {
+              <span>{{ dir() === 'asc' ? ' ▲' : ' ▼' }}</span>
             }
           </th>
           <th>Correo</th>
@@ -91,29 +77,14 @@
       </tbody>
     </table>
 
-    @if (respuesta(); as r) {
-      <div class="paginacion">
-        <button
-          type="button"
-          class="btn"
-          [disabled]="pagina() === 0 || cargando()"
-          (click)="cambiarPagina(-1)"
-        >
-          « Anterior
-        </button>
-        <span class="info-paginacion">
-          Página {{ r.totalPaginas === 0 ? 0 : pagina() + 1 }} de {{ r.totalPaginas }} · {{ r.totalElementos }} clientes
-        </span>
-        <button
-          type="button"
-          class="btn"
-          [disabled]="r.ultima || cargando()"
-          (click)="cambiarPagina(1)"
-        >
-          Siguiente »
-        </button>
-      </div>
-    }
+    <app-paginador
+      [pagina]="p.pagina"
+      [totalPaginas]="p.totalPaginas"
+      [totalElementos]="p.totalElementos"
+      [tamanio]="p.tamanio"
+      (cambioPagina)="irAPagina($event)"
+      (cambioTamanio)="cambiarTamanio($event)"
+    />
   }
 
   @if (clienteADarDeBaja(); as cl) {

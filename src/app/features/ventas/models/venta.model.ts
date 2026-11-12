@@ -18,6 +18,7 @@ export interface Venta {
   estado: EstadoVenta;
   total: number;
   detalles: DetalleVenta[];
+  creadoPor?: string | null;
 }
 
 /** Lo que se envía al registrar: solo ids y cantidades. */
