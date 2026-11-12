@@ -1,113 +1,104 @@
-import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  input,
+  linkedSignal,
+  numberAttribute,
+  signal,
+} from '@angular/core';
+import { rxResource } from '@angular/core/rxjs-interop';
 import { CurrencyPipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { RouterLink } from '@angular/router';
-import { PaginaResponse } from '../../../../core/models/pagina-response';
+import { Router, RouterLink } from '@angular/router';
+import { Pagina } from '../../../../core/models/pagina';
 import { mensajeError } from '../../../../core/utils/http-error';
-import { Categoria } from '../../../categorias/models/categoria.model';
-import { CategoriaService } from '../../../categorias/services/categoria-service';
-import { OrdenDireccion, OrdenProducto, Producto } from '../../models/producto.model';
+import { Producto } from '../../models/producto.model';
 import { ProductoService } from '../../services/producto-service';
+import { Paginador } from '../../../../shared/components/paginador/paginador';
 import { SiPermiso } from '../../../../shared/directives/si-permiso';
 
 @Component({
-  imports: [RouterLink, CurrencyPipe, SiPermiso],
-  selector: 'app-producto-list',  
-  styleUrl: './producto-list.css',
+  selector: 'app-producto-list',
+  imports: [RouterLink, CurrencyPipe, Paginador, SiPermiso],
   templateUrl: './producto-list.html',
+  styleUrl: './producto-list.css',
 })
-export class ProductoList implements OnInit {
+export class ProductoList {
   private readonly productoService = inject(ProductoService);
-  private readonly categoriaService = inject(CategoriaService);
+  private readonly router = inject(Router);
 
-  readonly categoriaId = input<string>();
-
-  protected readonly pagina = signal(0);
-  protected readonly tamanio = signal(10);
-  protected readonly ordenarPor = signal<OrdenProducto>('nombre');
-  protected readonly direccion = signal<OrdenDireccion>('asc');
-  protected readonly resultado = signal<PaginaResponse<Producto> | null>(null);
-  protected readonly categorias = signal<Categoria[]>([]);
-  protected readonly categoriaFiltro = signal<number | null>(null);
-  protected readonly cargando = signal(false);
-  protected readonly error = signal<string | null>(null);
-
-  protected readonly productos = computed(() => {
-    const filtro = this.categoriaFiltro();
-    const lista = this.resultado()?.contenido ?? [];
-    return filtro === null ? lista : lista.filter(p => p.categoriaId === filtro);
+  // Llegan de la URL (?pagina=2&tamanio=20&orden=nombre&dir=asc)
+  readonly pagina = input(0, {
+    transform: (v: unknown) => numberAttribute(v, 0),
+  });
+  readonly tamanio = input(20, {
+    transform: (v: unknown) => numberAttribute(v, 20),
+  });
+  readonly orden = input<string, unknown>('nombre', {
+    transform: (v: unknown) => (typeof v === 'string' && v.trim() ? v.trim() : 'nombre'),
+  });
+  readonly dir = input<'asc' | 'desc', unknown>('asc', {
+    transform: (v: unknown) => (v === 'desc' ? 'desc' : 'asc'),
   });
 
-  protected readonly categoriaSeleccionadaNombre = computed(() => {
-    const id = this.categoriaFiltro();
-    return this.categorias().find(c => c.id === id)?.nombre ?? '';
+  protected readonly accionError = signal<string | null>(null);
+
+  protected readonly productos = rxResource({
+    params: () => ({
+      pagina: this.pagina(),
+      tamanio: this.tamanio(),
+      ordenarPor: this.orden(),
+      direccion: this.dir(),
+    }),
+    stream: ({ params }) => this.productoService.listar(params),
   });
 
-  ngOnInit(): void {
-    const paramCatId = this.categoriaId();
-    if (paramCatId) {
-      this.categoriaFiltro.set(Number(paramCatId));
-      this.tamanio.set(100);
-    }
-    this.categoriaService.listar().subscribe({
-      next: datos => this.categorias.set(datos),
-      error: (err: HttpErrorResponse) => this.error.set(mensajeError(err)),
-    });
-    this.cargar();
+  // Conserva la página anterior mientras llega la nueva (sin parpadeo)
+  protected readonly pag = linkedSignal<
+    Pagina<Producto> | undefined,
+    Pagina<Producto> | undefined
+  >({
+    source: () => this.productos.value(),
+    computation: (nueva, previa) => nueva ?? previa?.value,
+  });
+
+  protected readonly error = computed(() => {
+    if (this.accionError()) return this.accionError();
+    const err = this.productos.error();
+    if (!err) return null;
+    return err instanceof HttpErrorResponse ? mensajeError(err) : 'Error al cargar los productos.';
+  });
+
+  protected irAPagina(pagina: number): void {
+    this.navegar({ pagina });
   }
 
-  cargar(): void {
-    this.cargando.set(true);
-    this.error.set(null);
-    this.productoService
-      .listar(
-        this.pagina(),
-        this.tamanio(),
-        this.ordenarPor(),
-        this.direccion()
-      )
-      .subscribe({
-        next: pagina => {
-          this.resultado.set(pagina);
-          this.cargando.set(false);
-        },
-        error: (err: HttpErrorResponse) => {
-          this.error.set(mensajeError(err));
-          this.cargando.set(false);
-        },
-      });
+  protected cambiarTamanio(tamanio: number): void {
+    this.navegar({ tamanio, pagina: 0 }); // vuelve a la primera
   }
-  irA(pagina : number) : void{
-    this.pagina.set(pagina);
-    this.cargar();
+
+  protected ordenarPor(campo: string): void {
+    const dir = this.orden() === campo && this.dir() === 'asc' ? 'desc' : 'asc';
+    this.navegar({ orden: campo, dir, pagina: 0 });
   }
-  cambiarTamanio(valor: string): void {
-    this.tamanio.set(Number(valor));
-    this.irA(0);
-  }
-  ordenar(campo: OrdenProducto): void {
-    if (this.ordenarPor() === campo) {
-      this.direccion.update(d => (d === 'asc' ? 'desc' : 'asc'));
-    } else {
-      this.ordenarPor.set(campo);
-      this.direccion.set('asc');
-    }
-    this.irA(0);
-  }
-  filtrarPorCategoria(valor: string): void {
-    this.categoriaFiltro.set(valor ? Number(valor) : null);
-  }
-  darDeBaja(producto: Producto): void {
+
+  protected darDeBaja(producto: Producto): void {
     if (!confirm(`¿Dar de baja el producto "${producto.nombre}"?`)) {
       return;
     }
+    this.accionError.set(null);
     this.productoService.darDeBaja(producto.id).subscribe({
-      next: () => {
-        this.cargar();
-      },
-      error: (err: HttpErrorResponse) => {
-        this.error.set(mensajeError(err));
-      },
+      next: () => this.productos.reload(),
+      error: (err: HttpErrorResponse) => this.accionError.set(mensajeError(err)),
+    });
+  }
+
+  private navegar(cambios: Record<string, string | number>): void {
+    this.accionError.set(null);
+    this.router.navigate([], {
+      queryParams: cambios,
+      queryParamsHandling: 'merge',
     });
   }
 }
