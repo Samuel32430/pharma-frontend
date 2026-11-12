@@ -6,7 +6,7 @@
   @if (cargando()) {
     <p>Cargando clientes y productos…</p>
   } @else {
-    <form [formGroup]="form" (ngSubmit)="revisar()" class="card">
+    <form [formGroup]="form" (ngSubmit)="registrar()" class="card">
       <!-- Cabecera: buscador de cliente -->
       <h3 class="subtitulo">1. Cliente</h3>
       @if (clienteElegido(); as c) {
@@ -19,6 +19,7 @@
           <input
             class="input"
             type="search"
+            data-testid="buscar-cliente"
             [formControl]="buscarCliente"
             placeholder="Buscar cliente por nombre, apellido o DNI…"
             aria-label="Buscar cliente"
@@ -27,7 +28,7 @@
             <ul class="resultados">
               @for (c of clientesEncontrados(); track c.id) {
                 <li>
-                  <button type="button" (click)="elegirCliente(c)">
+                  <button type="button" data-testid="opcion-cliente" (click)="elegirCliente(c)">
                     <strong>{{ c.apellidos }}, {{ c.nombres }}</strong>
                     <span class="dato">DNI {{ c.dni }}</span>
                   </button>
@@ -49,6 +50,7 @@
         <input
           class="input"
           type="search"
+          data-testid="buscar-producto"
           [formControl]="buscarProducto"
           (keydown.enter)="agregarPrimero($event)"
           placeholder="Buscar producto por nombre o categoría… (Enter agrega el primero)"
@@ -58,7 +60,12 @@
           <ul class="resultados">
             @for (p of productosEncontrados(); track p.id) {
               <li>
-                <button type="button" (click)="agregarProducto(p)">
+                <button
+                  type="button"
+                  data-testid="opcion-producto"
+                  [attr.data-stock]="p.stock"
+                  (click)="agregarProducto(p)"
+                >
                   <strong>{{ p.nombre }}</strong>
                   <span class="dato">{{ p.categoriaNombre }}</span>
                   <span class="dato">{{ p.precio | currency: 'PEN' : 'S/ ' }}</span>
@@ -100,6 +107,7 @@
                   type="number"
                   min="1"
                   step="1"
+                  data-testid="cantidad"
                   formControlName="cantidad"
                 />
                 @if (lineas()[i]?.excedeStock) {
@@ -125,7 +133,7 @@
         <tfoot>
           <tr>
             <td colspan="3" class="monto">Total estimado</td>
-            <td class="monto total">{{ total() | currency: 'PEN' : 'S/ ' }}</td>
+            <td class="monto total" data-testid="total-venta">{{ total() | currency: 'PEN' : 'S/ ' }}</td>
             <td></td>
           </tr>
         </tfoot>
@@ -134,44 +142,21 @@
         <small class="error">Agregue al menos un producto y una cantidad entera mayor que cero en cada línea.</small>
       }
 
+      <label class="check">
+        <input
+          type="checkbox"
+          [checked]="imprimirAlRegistrar()"
+          (change)="imprimirAlRegistrar.set($any($event.target).checked)"
+        />
+        Imprimir el comprobante al registrar
+      </label>
+
       <div class="acciones">
         <a routerLink="/ventas" class="btn">Cancelar</a>
-        <button type="submit" class="btn btn-primary">Revisar venta</button>
+        <button type="submit" class="btn btn-primary" [disabled]="guardando()">
+          {{ guardando() ? 'Registrando…' : 'Registrar venta' }}
+        </button>
       </div>
     </form>
-
-    <!-- Confirmación de la operación -->
-    @if (confirmando()) {
-      <div class="confirmacion card" role="dialog" aria-label="Confirmar venta">
-        <h3>¿Confirma el registro de la venta?</h3>
-        <p>Cliente: <strong>{{ clienteElegido()?.apellidos }}, {{ clienteElegido()?.nombres }}</strong></p>
-        <p>Productos: <strong>{{ detalles.length }}</strong> · Total estimado: <strong>{{ total() | currency: 'PEN' : 'S/ ' }}</strong></p>
-        <p class="nota">El total definitivo lo calcula el servidor con los precios vigentes.</p>
-        <label class="check">
-          <input
-            type="checkbox"
-            [checked]="imprimirAlRegistrar()"
-            (change)="imprimirAlRegistrar.set($any($event.target).checked)"
-          />
-          Imprimir el comprobante al registrar
-        </label>
-        <div class="acciones">
-          <button
-            type="button"
-            class="btn"
-            [disabled]="guardando()"
-            (click)="confirmando.set(false)"
-          >Volver</button>
-          <button
-            type="button"
-            class="btn btn-primary"
-            [disabled]="guardando()"
-            (click)="confirmar()"
-          >
-            {{ guardando() ? 'Registrando…' : 'Confirmar venta' }}
-          </button>
-        </div>
-      </div>
-    }
   }
 </section>

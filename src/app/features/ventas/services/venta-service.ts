@@ -2,7 +2,7 @@ import { inject, Service } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { PaginaResponse } from '../../../core/models/pagina-response';
+import { Pagina } from '../../../core/models/pagina';
 import { FiltroVentas, Venta, VentaRequest } from '../models/venta.model';
 
 @Service()
@@ -23,7 +23,7 @@ export class VentaService {
     filtro: FiltroVentas,
     pagina: number,
     tamanio: number
-  ): Observable<PaginaResponse<Venta>> {
+  ): Observable<Pagina<Venta>> {
     let params = new HttpParams()
       .set('pagina', pagina)
       .set('tamanio', tamanio)
@@ -35,6 +35,6 @@ export class VentaService {
     if (filtro.desde) params = params.set('desde', filtro.desde);
     if (filtro.hasta) params = params.set('hasta', filtro.hasta);
 
-    return this.http.get<PaginaResponse<Venta>>(`${this.url}/buscar`, { params });
+    return this.http.get<Pagina<Venta>>(`${this.url}/buscar`, { params });
   }
 }

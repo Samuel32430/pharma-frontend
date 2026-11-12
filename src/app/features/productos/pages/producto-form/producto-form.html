@@ -59,6 +59,13 @@
         <label class="check">
             <input type="checkbox" formControlName="estado" /> Activo
         </label>
+        @if (detalleAuditoria(); as aud) {
+        <p class="nota-auditoria">
+            @if (aud.creadoPor) { Creado por <strong>{{ aud.creadoPor }}</strong> }
+            @if (aud.modificadoPor) { · Modificado por <strong>{{ aud.modificadoPor }}</strong> }
+            @if (aud.fechaModificacion) { ({{ aud.fechaModificacion | date: 'dd/MM/yyyy HH:mm' }}) }
+        </p>
+        }
         <div class="acciones">
             <a routerLink="/productos" class="btn">Cancelar</a>
             <button type="submit" class="btn btn-primary" [disabled]="guardando()">

@@ -1,19 +1,45 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  linkedSignal,
+  numberAttribute,
+  OnInit,
+  signal,
+} from '@angular/core';
+import { rxResource } from '@angular/core/rxjs-interop';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
-import { PaginaResponse } from '../../../../core/models/pagina-response';
+import { Router, RouterLink } from '@angular/router';
+import { Pagina } from '../../../../core/models/pagina';
 import { mensajeError } from '../../../../core/utils/http-error';
+import { Paginador } from '../../../../shared/components/paginador/paginador';
+import { SiPermiso } from '../../../../shared/directives/si-permiso';
 import { Cliente } from '../../../clientes/models/cliente.model';
 import { ClienteService } from '../../../clientes/services/cliente-service';
 import { EstadoVenta, FiltroVentas, Venta } from '../../models/venta.model';
 import { VentaService } from '../../services/venta-service';
-import { SiPermiso } from '../../../../shared/directives/si-permiso';
+
+function numeroOpcional(v: unknown): number | null {
+  if (v === undefined || v === null || v === '') return null;
+  const n = Number(v);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+function estadoOpcional(v: unknown): EstadoVenta | null {
+  return v === 'REGISTRADA' || v === 'ANULADA' ? v : null;
+}
+
+function textoOpcional(v: unknown): string | null {
+  return typeof v === 'string' && v.trim() ? v.trim() : null;
+}
 
 @Component({
   selector: 'app-venta-list',
-  imports: [ReactiveFormsModule, RouterLink, CurrencyPipe, DatePipe, SiPermiso],
+  imports: [ReactiveFormsModule, RouterLink, CurrencyPipe, DatePipe, Paginador, SiPermiso],
   templateUrl: './venta-list.html',
   styleUrl: './venta-list.css',
 })
@@ -21,12 +47,23 @@ export class VentaList implements OnInit {
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly ventaService = inject(VentaService);
   private readonly clienteService = inject(ClienteService);
+  private readonly router = inject(Router);
+
+  // Parámetros sincronizados con la URL
+  readonly pagina = input(0, {
+    transform: (v: unknown) => numberAttribute(v, 0),
+  });
+  readonly tamanio = input(10, {
+    transform: (v: unknown) => numberAttribute(v, 10),
+  });
+  readonly clienteId = input<number | null, unknown>(null, { transform: numeroOpcional });
+  readonly estado = input<EstadoVenta | null, unknown>(null, { transform: estadoOpcional });
+  readonly desde = input<string | null, unknown>(null, { transform: textoOpcional });
+  readonly hasta = input<string | null, unknown>(null, { transform: textoOpcional });
 
   protected readonly clientes = signal<Cliente[]>([]);
-  protected readonly resultado = signal<PaginaResponse<Venta> | null>(null);
-  protected readonly pagina = signal(0);
-  protected readonly cargando = signal(false);
-  protected readonly error = signal<string | null>(null);
+  protected readonly validacionError = signal<string | null>(null);
+  protected readonly ahora = signal(new Date());
 
   protected readonly filtros = this.fb.group({
     clienteId: this.fb.control<number | null>(null),
@@ -35,14 +72,63 @@ export class VentaList implements OnInit {
     hasta: this.fb.control<string | null>(null),
   });
 
-  protected readonly ahora = signal(new Date());
+  protected readonly ventas = rxResource({
+    params: () => ({
+      filtro: {
+        clienteId: this.clienteId(),
+        estado: this.estado(),
+        desde: this.desde(),
+        hasta: this.hasta(),
+      } satisfies FiltroVentas,
+      pagina: this.pagina(),
+      tamanio: this.tamanio(),
+    }),
+    stream: ({ params }) =>
+      this.ventaService.buscar(params.filtro, params.pagina, params.tamanio),
+  });
+
+  protected readonly pag = linkedSignal<
+    Pagina<Venta> | undefined,
+    Pagina<Venta> | undefined
+  >({
+    source: () => this.ventas.value(),
+    computation: (nueva, previa) => nueva ?? previa?.value,
+  });
+
+  protected readonly error = computed(() => {
+    if (this.validacionError()) return this.validacionError();
+    const err = this.ventas.error();
+    if (!err) return null;
+    return err instanceof HttpErrorResponse ? mensajeError(err) : 'Error al buscar ventas.';
+  });
 
   /** Suma de los totales de la página mostrada (solo ventas REGISTRADAS). */
   protected readonly totalPagina = computed(() =>
-    (this.resultado()?.contenido ?? [])
+    (this.pag()?.contenido ?? [])
       .filter(v => v.estado === 'REGISTRADA')
       .reduce((suma, v) => suma + v.total, 0)
   );
+
+  constructor() {
+    effect(() => {
+      this.filtros.setValue(
+        {
+          clienteId: this.clienteId(),
+          estado: this.estado(),
+          desde: this.desde(),
+          hasta: this.hasta(),
+        },
+        { emitEvent: false }
+      );
+    });
+  }
+
+  ngOnInit(): void {
+    this.clienteService.listar(0, 100).subscribe({
+      next: p => this.clientes.set(p.contenido),
+      error: (err: HttpErrorResponse) => this.validacionError.set(mensajeError(err)),
+    });
+  }
 
   /** Texto con los filtros aplicados, para el encabezado impreso. */
   protected resumenFiltros(): string {
@@ -62,47 +148,45 @@ export class VentaList implements OnInit {
     setTimeout(() => window.print());
   }
 
-  ngOnInit(): void {
-    this.clienteService.listar(0, 100).subscribe({
-      next: p => this.clientes.set(p.contenido),
-      error: (err: HttpErrorResponse) => this.error.set(mensajeError(err)),
-    });
-    this.cargar();
-  }
-
   buscar(): void {
-    const { desde, hasta } = this.filtros.getRawValue();
+    const { clienteId, estado, desde, hasta } = this.filtros.getRawValue();
     if (desde && hasta && desde > hasta) {
-      this.error.set('La fecha «desde» no puede ser posterior a la fecha «hasta».');
+      this.validacionError.set('La fecha «desde» no puede ser posterior a la fecha «hasta».');
       return;
     }
-    this.pagina.set(0);
-    this.cargar();
+    this.navegar({
+      clienteId: clienteId || null,
+      estado: estado || null,
+      desde: desde || null,
+      hasta: hasta || null,
+      pagina: 0,
+    });
   }
 
   limpiar(): void {
     this.filtros.reset();
-    this.buscar();
+    this.navegar({
+      clienteId: null,
+      estado: null,
+      desde: null,
+      hasta: null,
+      pagina: 0,
+    });
   }
 
-  irA(pagina: number): void {
-    this.pagina.set(pagina);
-    this.cargar();
+  protected irAPagina(pagina: number): void {
+    this.navegar({ pagina });
   }
 
-  private cargar(): void {
-    const filtro: FiltroVentas = this.filtros.getRawValue();
-    this.cargando.set(true);
-    this.error.set(null);
-    this.ventaService.buscar(filtro, this.pagina(), 10).subscribe({
-      next: r => {
-        this.resultado.set(r);
-        this.cargando.set(false);
-      },
-      error: (err: HttpErrorResponse) => {
-        this.error.set(mensajeError(err));
-        this.cargando.set(false);
-      },
+  protected cambiarTamanio(tamanio: number): void {
+    this.navegar({ tamanio, pagina: 0 });
+  }
+
+  private navegar(cambios: Record<string, string | number | null>): void {
+    this.validacionError.set(null);
+    this.router.navigate([], {
+      queryParams: cambios,
+      queryParamsHandling: 'merge',
     });
   }
 }
